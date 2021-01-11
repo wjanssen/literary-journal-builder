@@ -12,7 +12,7 @@ from subprocess import call as runcommand
 # See the LaTeX book, https://upload.wikimedia.org/wikipedia/commons/2/2d/LaTeX.pdf, for more
 
 
-HEADER="""
+HEADER1="""
 %% journal-style document, indent paragraphs, 12 point text
 %% twoside -- printed for binding, openany -- don't wait for an even page to start new article
 \\documentclass[12pt,journal,indent,openany]{paper}
@@ -33,6 +33,9 @@ HEADER="""
 \\usepackage{graphicx}
 %% for boxes behind text
 \\usepackage[most]{tcolorbox}
+"""
+
+COVERIMAGE="""
 %% for transparency
 \\usepackage{transparent}
 %% for images
@@ -46,6 +49,9 @@ HEADER="""
 {\\includegraphics[width=\\paperwidth,height=\\paperheight,keepaspectratio,clip]{%(coverimage)s}}%%
 \\vfill
 }}}
+"""
+
+HEADER2="""
 %%
 %% End of preamble
 %%
@@ -64,7 +70,7 @@ Literary Journal}
 \\vfill
 \\begin{tcolorbox}
 \\begin{center}
-{\\large Volume %(volume)s, Number %(number)s, %(date)s}
+{\\large Volume %(volume)s, Number %(number)s, %(issuedate)s}
 \\end{center}
 \\end{tcolorbox}
 
@@ -79,7 +85,7 @@ MASTHEAD="""
 {A Literary Journal for the Adult Education Classes of the Silicon Valley}
 \\linebreak
 \\linebreak
-{\\copyright %(year)s, Adult Education Press}
+{Copyright \\copyright  %(thisyear)s, Adult Education Press}
 \\vfill
 {Editor-in-chief: James Swenson}
 \\linebreak
@@ -144,12 +150,19 @@ FOOTER="""
 
 ## assume the data directory is the first arg
 
-def build(dbdir, pdffile, coverimgfile):
-    if not os.path.isdir(dbdir):
-        raise Exception("Data directory given, " + dbdir + ", is not a directory")
-    db = os.path.join(dbdir, "db.csv")
+def build(args):
+    db = args['dbfile']
+    pdffile = args['output']
+    contribs_dir = args['contribs']
+    coverimagefile = args['coverart']
+    if coverimagefile is not None and not os.path.exists(coverimagefile):
+        raise Exception("Specified cover image " + coverimagefile + " does not exist.")
+    else:
+        args['coverimage'] = os.path.abspath(coverimagefile)
     if not os.path.exists(db):
         raise Exception("No database file; should be " + db)
+    if not os.path.isdir(contribs_dir):
+        raise Exception("Directory of contributions " + contribs_dir + " is not a directory.")
     tempfiles = {}
     with open(db) as csvfile:
         dbreader = csv.DictReader(csvfile)
@@ -158,10 +171,10 @@ def build(dbdir, pdffile, coverimgfile):
             filename = row['filename']
             # index, author, title, email, filename = row
             if not os.path.exists(filename):
-                if not os.path.exists(os.path.join(dbdir, filename)):
+                if not os.path.exists(os.path.join(contribs_dir, filename)):
                     raise Exception("Can't find file " + filename)
                 else:
-                    fullfilename = os.path.abspath(os.path.join(dbdir, filename))
+                    fullfilename = os.path.abspath(os.path.join(contribs_dir, filename))
             else:
                 fullfilename = os.path.abspath('filename')
             print(row['title'], fullfilename)
@@ -180,15 +193,17 @@ def build(dbdir, pdffile, coverimgfile):
 
     # Now build the journal.  Assume volume=1, number=1 for now
     with tempfile.NamedTemporaryFile("w+", suffix=".latex") as outputfile:
-        if coverimgfile is None or not os.path.exists(coverimgfile):
-            coverimgfile = "data/cover.jpg"
-        thisyear = datetime.datetime.now().year
-        outputfile.write(HEADER % {'date': "Spring 2021", 'volume': 1, 'number': 1, 'coverimage': os.path.abspath(coverimgfile)})
-        outputfile.write(MASTHEAD % {'year': thisyear, 'covercredit': "Bill Janssen"})
+        args['thisyear'] = datetime.datetime.now().year
+        outputfile.write(HEADER1 % args)
+        if coverimagefile is not None:
+            outputfile.write(COVERIMAGE % args)
+        outputfile.write(HEADER2 % args)
+        outputfile.write(MASTHEAD % args)
         outputfile.write(CONTENTSPAGE)
         outputfile.write(CONTRIBUTIONS_HEADER)
         for article in sorted(tempfiles):
             metadata = tempfiles[article]
+            metadata.update(args)
             outputfile.write(CONTRIBUTION % metadata)
             outputfile.write(open(metadata['filename']).read())
         outputfile.write(FOOTER)
@@ -208,11 +223,19 @@ def build(dbdir, pdffile, coverimgfile):
 
 
 if __name__ == "__main__":
-    import sys, traceback
+    import sys, traceback, argparse
+    parser = argparse.ArgumentParser(description="Build a magazine from submissions using LaTeX")
+    parser.add_argument("--dbfile", required=True, help="required, specify spreadsheet file (.CSV format) or DB file to pull metadata from")
+    parser.add_argument("--contribs", required=True, help="required, specify directory where contributions are, one per file, DOCX or RTF format")
+    parser.add_argument("--output", required=True, help="required, specify PDF output file name")
+    parser.add_argument("--coverart", help="specify file containing cover art, if it exists")
+    parser.add_argument("--covercredit", help="who gets credit for the cover art")
+    parser.add_argument("--issuedate", help="specify date string to use for issue")
+    parser.add_argument("--volume", help="which volume of the magazine is it")
+    parser.add_argument("--number", help="which number of the volume is it")
+    args = parser.parse_args()
     try:
-        if len(sys.argv) < 3:
-            raise Exception("Not enough args")
-        build(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
+        build(vars(args))
     except:
         traceback.print_exc()
         sys.exit(1)
