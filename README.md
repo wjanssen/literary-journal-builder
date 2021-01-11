@@ -4,7 +4,7 @@ Code to take a DB of authors and their texts (in docx format) and build a PDF ma
 
 Requires the presence of pandoc (to convert submissions to TeX format) and pdflatex (to build the PDF file).
 
-Note that the masthead literal contains a number of hard-coded names, and the magazine name is also hard-coded.
+Note that the masthead literal contains a number of hard-coded names, and the magazine name is also hard-coded (in HEADING1).  They should probably be command-line options.
 
 Produces a PDF file with 6.125x9.25 inch pages, the format used by the Supreme Court, which works well with tablets.
 
