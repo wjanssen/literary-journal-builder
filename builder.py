@@ -12,14 +12,18 @@ from subprocess import call as runcommand
 # See the LaTeX book, https://upload.wikimedia.org/wikipedia/commons/2/2d/LaTeX.pdf, for more
 
 
+# Use paper size good for tablets, recommended in LaTeX book, with 1 inch margins
+PAGEWIDTH = 6.0         # inches
+PAGEHEIGHT = 9.0        # inches
+PAGEASPECT = PAGEWIDTH / PAGEHEIGHT
+
 HEADER1="""
 %% journal-style document, indent paragraphs, 12 point text
 %% twoside -- printed for binding, openany -- don't wait for an even page to start new article
 \\documentclass[12pt,journal,openany]{paper}
 %% skip space between paragraphs instead of indenting them
 \\usepackage{parskip}
-%% Use paper size good for tablets, recommended in LaTeX book, with 1 inch margins
-\\usepackage[paperwidth=6in, paperheight=9in]{geometry}
+\\usepackage[paperwidth=""" + str(PAGEWIDTH) + """in, paperheight=""" + str(PAGEHEIGHT) + """in]{geometry}
 %% English main language
 \\usepackage[english]{babel}
 \\usepackage{microtype}
@@ -48,7 +52,7 @@ COVERIMAGE1="""
 \\vfill
 \\centering
 %% {\\transparent{0.4} \\includegraphics[width=\\paperwidth,height=\\paperheight,%%
-{\\includegraphics[width=\\paperwidth,height=\\paperheight,keepaspectratio,clip]{%(coverimage)s}}%%
+{\\includegraphics[%(croplimit)s,keepaspectratio,clip]{%(coverimage)s}}%%
 \\vfill
 }}}
 """
@@ -156,7 +160,11 @@ FOOTER="""
 \\end{document}
 """
 
-## assume the data directory is the first arg
+def figure_cover_art_cropping(imagefile, pageaspect):
+    from PIL import Image
+    size = Image.open(imagefile).size
+    aspectratio = float(size[0])/float(size[1])
+    return 'width=\\paperwidth' if aspectratio < pageaspect else 'height=\\paperheight'
 
 def build(args):
     db = args['dbfile']
@@ -167,6 +175,7 @@ def build(args):
         if not os.path.exists(coverimagefile):
             raise Exception("Specified cover image " + coverimagefile + " does not exist.")
         args['coverimage'] = os.path.abspath(coverimagefile)
+        args['croplimit'] = figure_cover_art_cropping(coverimagefile, PAGEASPECT)
     if not os.path.exists(db):
         raise Exception("No database file; should be " + db)
     if not os.path.isdir(contribs_dir):
