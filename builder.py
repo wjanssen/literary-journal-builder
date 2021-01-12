@@ -15,9 +15,11 @@ from subprocess import call as runcommand
 HEADER1="""
 %% journal-style document, indent paragraphs, 12 point text
 %% twoside -- printed for binding, openany -- don't wait for an even page to start new article
-\\documentclass[12pt,journal,indent,openany]{paper}
+\\documentclass[12pt,journal,openany]{paper}
+%% skip space between paragraphs instead of indenting them
+\\usepackage{parskip}
 %% Use paper size good for tablets, recommended in LaTeX book, with 1 inch margins
-\\usepackage[paperwidth=7in, paperheight=10in]{geometry}
+\\usepackage[paperwidth=6in, paperheight=9in]{geometry}
 %% English main language
 \\usepackage[english]{babel}
 \\usepackage{microtype}
@@ -117,7 +119,7 @@ CONTENTSPAGE="""
 
 CONTRIBUTIONS_HEADER="""
 \\journalpart[]{}
-\\renewcommand*\\rmdefault{ppl}
+\\renewcommand*\\rmdefault{tmr}
 \\pagestyle{fancy}
 \\fancyhf{}
 """
@@ -219,11 +221,13 @@ def build(args):
             if metadata['type'] == 'story':
                 outputfile.write(open(metadata['filename']).read())
             elif metadata['type'] == 'poem':
+                outputfile.write("\\begin{verse}\n")
                 for line in open(metadata['filename']).readlines():
                     if line.strip():
-                        outputfile.write("\\noindent " + line)
-                    else:
                         outputfile.write(line)
+                    else:
+                        outputfile.write("\\\\\n")
+                outputfile.write("\\end{verse}\n")
         outputfile.write(FOOTER)
         outputfile.flush()
         # figure out the TeX jobname
