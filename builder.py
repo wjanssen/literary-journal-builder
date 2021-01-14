@@ -73,10 +73,7 @@ HEADER3="""
 \\begin{titlepage}
 \\begin{tcolorbox}
 \\begin{center}
-\\textbf{\\Large \color{Magenta} Valley of Heart's Delight %%
-\\linebreak%%
-\\linebreak%%
-Literary Journal}
+\\textbf{\\Large \color{%(titlecolor)s} From the\\linebreak\\linebreak Valley of Heart's Delight}
 \\end{center}
 \\end{tcolorbox}
 \\vfill
@@ -92,7 +89,7 @@ Literary Journal}
 MASTHEAD="""
 \\thispagestyle{empty}
 \\begin{center}
-{\\large Valley of Heart's Delight Literary Journal}
+{\\large From the Valley of Heart's Delight}
 \\linebreak
 {A Literary Journal for the Adult Education Classes of the Silicon Valley}
 \\linebreak
@@ -264,6 +261,7 @@ if __name__ == "__main__":
     parser.add_argument("--number", required=True, help="required, which number of the volume is it")
     parser.add_argument("--coverart", help="specify file containing cover art, if it exists")
     parser.add_argument("--covercredit", help="who gets credit for the cover art")
+    parser.add_argument("--titlecolor", help="specify the color for the title font, from the set of the dvips color names", default="Black")
     args = parser.parse_args()
     try:
         build(vars(args))
