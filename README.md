@@ -1,12 +1,34 @@
 # literary-journal-builder
 
-Code to take a DB of authors and their texts (in docx format) and build a PDF magazine from it
+Code to take a DB of authors (a spreadsheet in CSV format) and their texts (in docx format) and build a PDF magazine from it
 
 Requires the presence of pandoc (to convert submissions to TeX format) and pdflatex (to build the PDF file).
 
 Note that the masthead literal contains a number of hard-coded names, and the magazine name is also hard-coded (in HEADING1).  They should probably be command-line options.
 
 Produces a PDF file with trade paperback 6x9 inch pages, which works well with tablets.
+
+The DB file should be a comma-separated-value file with the following
+columns: index, type, author, title, email, filename.  Each column
+should have the name of the column at the top, in the first row.
+"index" specifies an ordinal value, the sort position of the article
+in the journal.  "type" must currently be a string, either "poem" or
+"story".  "author" is the name the author wants to be known by, will
+be printed under the article title.  "email" is the email address of
+the author, and will be used as a unique ID.  "filename" is the
+filename of an either ".docx" or ".rtf" file containing the article
+text, but not a title or author's name.  "filename" may be specified
+relative to the location of the DB file.
+
+Here's an example with only two articles:
+
+```
+index,type,author,title,email,filename
+1,poem,John Doe,My Brilliant Poem,john337@does.org,mybrillant.rtf
+2,story,Jane Roe,A Likely Story,jane1008@authoress.com,likelystory.docx
+...
+```
+
 
 To use:
 

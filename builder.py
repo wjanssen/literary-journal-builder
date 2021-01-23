@@ -224,8 +224,10 @@ def build(args):
                 continue
             metadata.update(args)
             outputfile.write(CONTRIBUTION % metadata)
+
             if metadata['type'] == 'story':
                 outputfile.write(open(metadata['filename']).read())
+
             elif metadata['type'] == 'poem':
                 outputfile.write("\\begin{verse}\n")
                 for line in open(metadata['filename']).readlines():
@@ -234,6 +236,7 @@ def build(args):
                     else:
                         outputfile.write("\\\\\n")
                 outputfile.write("\\end{verse}\n")
+
         outputfile.write(FOOTER)
         outputfile.flush()
         # figure out the TeX jobname
