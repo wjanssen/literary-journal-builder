@@ -23,27 +23,33 @@ HEADER1="""
 \\documentclass[12pt,journal,openany]{paper}
 %% skip space between paragraphs instead of indenting them
 \\usepackage{parskip}
-\\usepackage[paperwidth=""" + str(PAGEWIDTH) + """in, paperheight=""" + str(PAGEHEIGHT) + """in]{geometry}
+\\usepackage[paperwidth=""" + str(PAGEWIDTH) + """in, paperheight=""" + str(PAGEHEIGHT) + """in,left=2cm,right=2cm]{geometry}
 %% English main language
 \\usepackage[english]{babel}
 \\usepackage{microtype}
+%% for poetry typesetting
+\\usepackage{verse}
 %% allow use of colors, using dvips names for colors (see LaTeX book)
 \\usepackage[dvipsnames]{xcolor}
 %% give more control over page headers
 \\usepackage{fancyhdr}
 \\pagestyle{fancy}
+%% geometry gives us 'adjustwidth' for full page color boxes on title page
+\\usepackage[strict]{changepage}
 %% \\usepackage{lipsum} %% for dummy text only
 %% Use different colors for hyperlinks
 \\usepackage[colorlinks,linkcolor=blue!50!black]{hyperref}
+%% show frame
+%% \\usepackage{showframe}
 %% allow images
 \\usepackage{graphicx}
+%% for transparency
+\\usepackage{transparent}
 %% for boxes behind text
 \\usepackage[most]{tcolorbox}
 """
 
 COVERIMAGE1="""
-%% for transparency
-\\usepackage{transparent}
 %% for images
 \\usepackage{eso-pic}
 \\newcommand\\BackgroundPic{%%
@@ -67,21 +73,28 @@ HEADER2="""
 COVERIMAGE2="""
 %% Add background picture on title page
 \\AddToShipoutPicture*{\\BackgroundPic}
+\\clearpage
 """
 
 HEADER3="""
 \\begin{titlepage}
-\\begin{tcolorbox}
+\\begin{adjustwidth}{-2cm}{-2cm}
+\\transparent{0.7}
+\\begin{tcolorbox}[colback=white,coltext=%(titlecolor)s,sharp corners,boxrule=0.0mm]
 \\begin{center}
-\\textbf{\\Large \color{%(titlecolor)s} From the\\linebreak\\linebreak Valley of Heart's Delight}
+\\transparent{1.0}
+\\textbf{\\Huge Valley of Heart's Delight\\linebreak\\linebreak Literary Review}
 \\end{center}
 \\end{tcolorbox}
 \\vfill
-\\begin{tcolorbox}
+\\transparent{0.5}
+\\begin{tcolorbox}[colback=white,coltext=black,boxrule=0.0mm,sharp corners]
 \\begin{center}
+\\transparent{1.0}
 {\\large Volume %(volume)s, Number %(number)s, %(issuedate)s}
 \\end{center}
 \\end{tcolorbox}
+\\end{adjustwidth}
 
 \\end{titlepage}
 """
@@ -229,12 +242,13 @@ def build(args):
                 outputfile.write(open(metadata['filename']).read())
 
             elif metadata['type'] == 'poem':
+                outputfile.write("\\setlength{\\leftmargini}{1em}\n")
                 outputfile.write("\\begin{verse}\n")
                 for line in open(metadata['filename']).readlines():
                     if line.strip():
-                        outputfile.write(line)
-                    else:
-                        outputfile.write("\\\\\n")
+                        outputfile.write(line.rstrip() + "\\\\\n")
+                    # else:
+                    #     outputfile.write("\\!\n")
                 outputfile.write("\\end{verse}\n")
 
         outputfile.write(FOOTER)
