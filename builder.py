@@ -27,6 +27,7 @@ HEADER1="""
 %% English main language
 \\usepackage[english]{babel}
 \\usepackage{microtype}
+\\usepackage{mathpazo}          %% use Herman Zapf's Palatino font variants
 %% for poetry typesetting
 \\usepackage{verse}
 \\usepackage{ragged2e}
@@ -134,7 +135,6 @@ CONTENTSPAGE="""
 
 CONTRIBUTIONS_HEADER="""
 \\journalpart[]{}
-\\renewcommand*\\rmdefault{tmr}
 \\pagestyle{fancy}
 \\fancyhf{}
 """
