@@ -29,6 +29,7 @@ HEADER1="""
 \\usepackage{microtype}
 %% for poetry typesetting
 \\usepackage{verse}
+\\usepackage{ragged2e}
 %% allow use of colors, using dvips names for colors (see LaTeX book)
 \\usepackage[dvipsnames]{xcolor}
 %% give more control over page headers
@@ -242,14 +243,14 @@ def build(args):
                 outputfile.write(open(metadata['filename']).read())
 
             elif metadata['type'] == 'poem':
-                outputfile.write("\\setlength{\\leftmargini}{1em}\n")
+                outputfile.write("\\setlength{\\leftmargini}{0em}%%\n\\raggedright%%\n")
                 outputfile.write("\\begin{verse}\n")
                 for line in open(metadata['filename']).readlines():
                     if line.strip():
                         outputfile.write(line.rstrip() + "\\\\\n")
                     # else:
                     #     outputfile.write("\\!\n")
-                outputfile.write("\\end{verse}\n")
+                outputfile.write("\\end{verse}\n\\justify\n")
 
         outputfile.write(FOOTER)
         outputfile.flush()
